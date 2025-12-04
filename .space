@@ -1,0 +1,24 @@
+{
+    "type"              : "lib",
+    "template"          : "clean",
+    "pm"                : "bun",
+
+    "repo"              : {
+        "org"           : "je-es",
+        "name"          : "sdb",
+        "version"       : "0.0.1",
+        "desc"          : "A lightweight, type-safe SQLite database wrapper for Bun with an elegant API and zero dependencies.",
+        "url"           : "https://github.com/je-es/sdb",
+        "kw"            : [ "je-es", "sdb", "database" ],
+        "license"       : "MIT"
+    },
+
+    "author"            : {
+        "id"            : "maysara-elshewehy",
+        "name"          : "Maysara",
+        "url"           : "https://github.com/maysara-elshewehy",
+        "email"         : "maysara.elshewehy@gmail.com"
+    },
+
+    "createdAt"         : "2025-11-27T08:31:02.855Z"
+}

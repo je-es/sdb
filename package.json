@@ -1,0 +1,51 @@
+{
+	"name"                             : "@je-es/sdb",
+	"version"                          : "0.0.1",
+	"description"                      : "A lightweight, type-safe SQLite database wrapper for Bun with an elegant API and zero dependencies.",
+	"keywords"                         : ["je-es", "server", "database"],
+	"license"                          : "MIT",
+	"homepage"                         : "https://github.com/je-es/sdb#readme",
+	"bugs"                             : {
+		"url"                          : "https://github.com/je-es/sdb/issues"
+	},
+	"author"                           : "Maysara <maysara.elshewehy@gmail.com>",
+	"repository"                       : {
+		"type"                         : "git",
+		"url"                          : "git+https://github.com/je-es/sdb.git"
+	},
+	"type"                             : "module",
+	"main"                             : "./dist/main.js",
+	"types"                            : "./dist/main.d.ts",
+	"files"                            : ["dist"],
+	"exports"                          : {
+		"."                            : {
+			"types"                    : "./dist/main.d.ts",
+			"import"                   : "./dist/main.js",
+			"require"                  : "./dist/main.js"
+		}
+	},
+	"scripts"                          : {
+		"build"                        : "tsup",
+		"lint"                         : "eslint src --ext .ts",
+		"test"                         : "bun test"
+	},
+	"engines"                          : {
+		"bun"                          : ">=1.3.3"
+	},
+	"peerDependencies"                 : {
+		"bun"                          : ">=1.3.3"
+	},
+	"dependencies"                     : {},
+	"devDependencies"                  : {
+		"@eslint/js"                   : "^9.34.0",
+		"@stylistic/eslint-plugin"     : "^5.3.1",
+		"@types/bun"                   : "^1.3.3",
+		"@types/node"                  : "^20.12.7",
+		"bun-plugin-dts"               : "^0.3.0",
+		"bun-types"                    : "^1.1.38",
+		"ts-node"                      : "^10.9.2",
+		"tsup"                         : "^8.5.1",
+		"typescript"                   : "^5.4.5",
+		"typescript-eslint"            : "^8.42.0"
+	}
+}

@@ -1,0 +1,31 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "tsconfig.json": true,
+        "eslint.config.mjs": true,
+        "bun.lock": true,
+        "LICENSE": true,
+        ".gitignore": true,
+        ".gitattributes": true,
+        ".npmignore": true,
+        "node_modules": true,
+        ".vscode": true,
+        "tsup.config.ts": true
+    },
+    "hide-files.files": [
+        "tsconfig.json",
+        "eslint.config.mjs",
+        "bun.lock",
+        "LICENSE",
+        ".gitignore",
+        ".gitattributes",
+        ".npmignore",
+        "node_modules",
+        ".vscode",
+        "tsup.config.ts"
+    ]
+}
