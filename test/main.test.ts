@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // test/main.test.ts
 //
 // Developed with ❤️ by Maysara.
@@ -6,7 +7,7 @@
 
 // ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-	import { describe, test, expect, beforeEach } from 'bun:test'
+	import { describe, test, expect, beforeEach } from 'bun:test';
 	import {
 		DB,
 		table,
@@ -21,9 +22,8 @@
 		unique,
 		defaultValue,
 		references,
-		type TableSchema,
-		type ColumnDefinition
-	} from '../src/main'
+		type TableSchema
+    } from '../src/main';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -695,7 +695,7 @@
 						txDb.insert('accounts', { name: 'Alice', balance: 100 });
 						throw new Error('Test error');
 					});
-				} catch (error) {
+				} catch {
 					// Expected error
 				}
 
