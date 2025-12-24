@@ -9,6 +9,11 @@
     type ColumnType = 'INTEGER' | 'TEXT' | 'REAL' | 'BLOB' | 'NUMERIC';
     type SqlValue = string | number | boolean | null | Uint8Array;
 
+    interface ForeignKeyOptions {
+        onDelete?       : 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION' | 'SET DEFAULT';
+        onUpdate?       : 'CASCADE' | 'RESTRICT' | 'NO ACTION' | 'SET DEFAULT';
+    }
+
     interface ColumnDefinition {
         name            : string;
         type            : ColumnType;
@@ -17,7 +22,7 @@
         notNull?        : boolean;
         unique?         : boolean;
         default?        : SqlValue;
-        references?     : { table: string; column: string };
+        references?     : { table: string; column: string; options?: ForeignKeyOptions };
     }
 
     interface TableSchema {
@@ -110,6 +115,6 @@ declare function primaryKey(col: ColumnDefinition, autoIncrement?: boolean): Col
 declare function notNull(col: ColumnDefinition): ColumnDefinition;
 declare function unique(col: ColumnDefinition): ColumnDefinition;
 declare function defaultValue(col: ColumnDefinition, value: SqlValue): ColumnDefinition;
-declare function references(col: ColumnDefinition, table: string, column: string): ColumnDefinition;
+declare function references(col: ColumnDefinition, table: string, column: string, options?: ForeignKeyOptions): ColumnDefinition;
 
-export { type ColumnDefinition, type ColumnType, DB, type LastIdRow, type QueryBuilder, type QueryBuilderInternal, type SqlValue, type TableRow, type TableSchema, type WhereCondition, blob, column, defaultValue, integer, notNull, numeric, primaryKey, real, references, table, text, unique };
+export { type ColumnDefinition, type ColumnType, DB, type ForeignKeyOptions, type LastIdRow, type QueryBuilder, type QueryBuilderInternal, type SqlValue, type TableRow, type TableSchema, type WhereCondition, blob, column, defaultValue, integer, notNull, numeric, primaryKey, real, references, table, text, unique };

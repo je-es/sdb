@@ -428,6 +428,14 @@
 
                     if (col.references) {
                         def += ` REFERENCES ${col.references.table}(${col.references.column})`;
+                        if (col.references.options) {
+                            if (col.references.options.onDelete) {
+                                def += ` ON DELETE ${col.references.options.onDelete}`;
+                            }
+                            if (col.references.options.onUpdate) {
+                                def += ` ON UPDATE ${col.references.options.onUpdate}`;
+                            }
+                        }
                     }
 
                     return def;
@@ -492,8 +500,8 @@
         return { ...col, default: value };
     }
 
-    export function references(col: types.ColumnDefinition, table: string, column: string): types.ColumnDefinition {
-        return { ...col, references: { table, column } };
+    export function references(col: types.ColumnDefinition, table: string, column: string, options?: types.ForeignKeyOptions): types.ColumnDefinition {
+        return { ...col, references: { table, column, options } };
     }
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝

@@ -1,6 +1,6 @@
 {
 	"name"                             : "@je-es/sdb",
-	"version"                          : "0.0.1",
+	"version"                          : "0.0.2",
 	"description"                      : "A lightweight, type-safe SQLite database wrapper for Bun with an elegant API and zero dependencies.",
 	"keywords"                         : ["je-es", "server", "database"],
 	"license"                          : "MIT",

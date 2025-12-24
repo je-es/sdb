@@ -9,6 +9,11 @@
     export type ColumnType = 'INTEGER' | 'TEXT' | 'REAL' | 'BLOB' | 'NUMERIC';
     export type SqlValue = string | number | boolean | null | Uint8Array;
 
+    export interface ForeignKeyOptions {
+        onDelete?       : 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION' | 'SET DEFAULT';
+        onUpdate?       : 'CASCADE' | 'RESTRICT' | 'NO ACTION' | 'SET DEFAULT';
+    }
+
     export interface ColumnDefinition {
         name            : string;
         type            : ColumnType;
@@ -17,7 +22,7 @@
         notNull?        : boolean;
         unique?         : boolean;
         default?        : SqlValue;
-        references?     : { table: string; column: string };
+        references?     : { table: string; column: string; options?: ForeignKeyOptions };
     }
 
     export interface TableSchema {

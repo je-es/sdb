@@ -8,7 +8,7 @@
 </div>
 
 <div align="center">
-    <img src="https://img.shields.io/badge/v-0.0.1-black"/>
+    <img src="https://img.shields.io/badge/v-0.0.2-black"/>
     <img src="https://img.shields.io/badge/🔥-@je--es-black"/>
     <br>
     <img src="https://github.com/je-es/sdb/actions/workflows/ci.yml/badge.svg" alt="CI" />
@@ -211,6 +211,20 @@
                 references(integer('user_id'), 'users', 'id')
             ]);
 
+            // Foreign key with cascade delete
+            const ordersSchema = table('orders', [
+                primaryKey(integer('id'), true),
+                notNull(references(integer('user_id'), 'users', 'id', { onDelete: 'CASCADE' })),
+                text('description')
+            ]);
+
+            // Foreign key with set null on delete
+            const projectsSchema = table('projects', [
+                primaryKey(integer('id'), true),
+                text('name'),
+                references(integer('org_id'), 'organizations', 'id', { onDelete: 'SET NULL' })
+            ]);
+
             // Table with indexes
             const productsSchema = {
                 name: 'products',
@@ -226,6 +240,8 @@
             };
 
             db.defineSchema(postsSchema);
+            db.defineSchema(ordersSchema);
+            db.defineSchema(projectsSchema);
             db.defineSchema(productsSchema);
             ```
 
@@ -264,7 +280,7 @@
               - `notNull(col)` - Add NOT NULL constraint
               - `unique(col)` - Add UNIQUE constraint
               - `defaultValue(col, value)` - Set default value
-              - `references(col, table, column)` - Add foreign key constraint
+              - `references(col, table, column, options?)` - Add foreign key constraint with optional `onDelete` (`CASCADE` | `SET NULL` | `RESTRICT` | `NO ACTION` | `SET DEFAULT`) and `onUpdate` behavior
 
 <!-- ╚═════════════════════════════════════════════════════════════════╝ -->
 

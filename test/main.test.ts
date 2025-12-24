@@ -121,6 +121,25 @@
 				expect(col.references).toEqual({ table: 'users', column: 'id' });
 			});
 
+			test('references() with onDelete CASCADE option', () => {
+				const col = references(integer('user_id'), 'users', 'id', { onDelete: 'CASCADE' });
+				expect(col.references?.options?.onDelete).toBe('CASCADE');
+			});
+
+			test('references() with onDelete SET NULL option', () => {
+				const col = references(integer('org_id'), 'organizations', 'id', { onDelete: 'SET NULL' });
+				expect(col.references?.options?.onDelete).toBe('SET NULL');
+			});
+
+			test('references() with multiple foreign key options', () => {
+				const col = references(integer('repo_id'), 'repositories', 'id', { 
+					onDelete: 'CASCADE',
+					onUpdate: 'RESTRICT'
+				});
+				expect(col.references?.options?.onDelete).toBe('CASCADE');
+				expect(col.references?.options?.onUpdate).toBe('RESTRICT');
+			});
+
 			test('chaining column modifiers', () => {
 				const col = notNull(unique(text('email')));
 				expect(col.notNull).toBe(true);
@@ -213,6 +232,96 @@
 
 				expect(db.listTables()).toContain('users');
 				expect(db.listTables()).toContain('posts');
+			});
+
+			test('defineSchema() with foreign key CASCADE delete', () => {
+				const usersSchema = table('users', [
+					primaryKey(integer('id'), true),
+					text('name')
+				]);
+
+				const ordersSchema = table('orders', [
+					primaryKey(integer('id'), true),
+					notNull(references(integer('user_id'), 'users', 'id', { onDelete: 'CASCADE' })),
+					text('description')
+				]);
+
+				db.defineSchema(usersSchema);
+				db.defineSchema(ordersSchema);
+
+				expect(db.listTables()).toContain('users');
+				expect(db.listTables()).toContain('orders');
+			});
+
+			test('defineSchema() with foreign key SET NULL delete', () => {
+				const organizationsSchema = table('organizations', [
+					primaryKey(integer('id'), true),
+					text('name')
+				]);
+
+				const projectsSchema = table('projects', [
+					primaryKey(integer('id'), true),
+					text('name'),
+					references(integer('org_id'), 'organizations', 'id', { onDelete: 'SET NULL' })
+				]);
+
+				db.defineSchema(organizationsSchema);
+				db.defineSchema(projectsSchema);
+
+				expect(db.listTables()).toContain('organizations');
+				expect(db.listTables()).toContain('projects');
+			});
+
+			test('defineSchema() with credit_transactions example', () => {
+				const usersSchema = table('users', [
+					primaryKey(integer('id'), true),
+					text('name')
+				]);
+
+				const organizationsSchema = table('organizations', [
+					primaryKey(integer('id'), true),
+					text('name')
+				]);
+
+				const repositoriesSchema = table('repositories', [
+					primaryKey(integer('id'), true),
+					text('name')
+				]);
+
+				const paymentsSchema = table('payments', [
+					primaryKey(integer('id'), true),
+					text('description')
+				]);
+
+				const subscriptionsSchema = table('subscriptions', [
+					primaryKey(integer('id'), true),
+					text('name')
+				]);
+
+				const creditTransactionsSchema = table('credit_transactions', [
+					primaryKey(integer('id'), true),
+					notNull(references(integer('user_id'), 'users', 'id', { onDelete: 'CASCADE' })),
+					notNull(integer('amount')),
+					notNull(text('transaction_type')),
+					notNull(text('description')),
+					references(integer('related_organization_id'), 'organizations', 'id', { onDelete: 'SET NULL' }),
+					references(integer('related_repository_id'), 'repositories', 'id', { onDelete: 'SET NULL' }),
+					references(integer('related_payment_id'), 'payments', 'id', { onDelete: 'SET NULL' }),
+					references(integer('related_subscription_id'), 'subscriptions', 'id', { onDelete: 'SET NULL' }),
+					notNull(integer('balance_before')),
+					notNull(integer('balance_after')),
+					defaultValue(text('metadata'), '{}'),
+					defaultValue(text('created_at'), new Date().toISOString())
+				]);
+
+				db.defineSchema(usersSchema);
+				db.defineSchema(organizationsSchema);
+				db.defineSchema(repositoriesSchema);
+				db.defineSchema(paymentsSchema);
+				db.defineSchema(subscriptionsSchema);
+				db.defineSchema(creditTransactionsSchema);
+
+				expect(db.listTables()).toContain('credit_transactions');
 			});
 
 			test('defineSchema() with indexes', () => {
