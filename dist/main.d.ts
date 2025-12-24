@@ -25,9 +25,21 @@
         references?     : { table: string; column: string; options?: ForeignKeyOptions };
     }
 
+    interface UniqueConstraint {
+        _type           : 'unique';
+        columns         : string[];
+    }
+
+    interface IndexDefinition {
+        _type           : 'index';
+        name            : string;
+        columns         : string[];
+        unique?         : boolean;
+    }
+
     interface TableSchema {
         name            : string;
-        columns         : ColumnDefinition[];
+        columns         : (ColumnDefinition | UniqueConstraint | IndexDefinition)[];
         indexes?        : { name: string; columns: string[]; unique?: boolean }[];
     }
 
@@ -104,7 +116,7 @@ declare class DB {
     private createQueryBuilder;
     private generateCreateTableSQL;
 }
-declare function table(name: string, columns: ColumnDefinition[]): TableSchema;
+declare function table(name: string, columns: (ColumnDefinition | UniqueConstraint | IndexDefinition)[]): TableSchema;
 declare function column(name: string, type: ColumnType): ColumnDefinition;
 declare function integer(name: string): ColumnDefinition;
 declare function text(name: string): ColumnDefinition;
@@ -114,7 +126,9 @@ declare function numeric(name: string): ColumnDefinition;
 declare function primaryKey(col: ColumnDefinition, autoIncrement?: boolean): ColumnDefinition;
 declare function notNull(col: ColumnDefinition): ColumnDefinition;
 declare function unique(col: ColumnDefinition): ColumnDefinition;
+declare function unique(columns: string[]): UniqueConstraint;
 declare function defaultValue(col: ColumnDefinition, value: SqlValue): ColumnDefinition;
 declare function references(col: ColumnDefinition, table: string, column: string, options?: ForeignKeyOptions): ColumnDefinition;
+declare function index(name: string, columns: string | string[], unique?: boolean): IndexDefinition;
 
-export { type ColumnDefinition, type ColumnType, DB, type ForeignKeyOptions, type LastIdRow, type QueryBuilder, type QueryBuilderInternal, type SqlValue, type TableRow, type TableSchema, type WhereCondition, blob, column, defaultValue, integer, notNull, numeric, primaryKey, real, references, table, text, unique };
+export { type ColumnDefinition, type ColumnType, DB, type ForeignKeyOptions, type IndexDefinition, type LastIdRow, type QueryBuilder, type QueryBuilderInternal, type SqlValue, type TableRow, type TableSchema, type UniqueConstraint, type WhereCondition, blob, column, defaultValue, index, integer, notNull, numeric, primaryKey, real, references, table, text, unique };

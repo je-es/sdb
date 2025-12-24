@@ -22,6 +22,7 @@
 		unique,
 		defaultValue,
 		references,
+		index,
 		type TableSchema
     } from '../src/main';
 
@@ -144,6 +145,32 @@
 				const col = notNull(unique(text('email')));
 				expect(col.notNull).toBe(true);
 				expect(col.unique).toBe(true);
+			});
+
+			test('compositeUnique() creates composite unique constraint', () => {
+				const constraint = unique(['user_id', 'provider']);
+				expect(constraint._type).toBe('unique');
+				expect((constraint as any).columns).toEqual(['user_id', 'provider']);
+			});
+
+			test('index() creates single column index', () => {
+				const idx = index('idx_user_id', 'user_id');
+				expect(idx._type).toBe('index');
+				expect(idx.name).toBe('idx_user_id');
+				expect(idx.columns).toEqual(['user_id']);
+			});
+
+			test('index() creates multi-column index', () => {
+				const idx = index('idx_user_provider', ['user_id', 'provider']);
+				expect(idx._type).toBe('index');
+				expect(idx.name).toBe('idx_user_provider');
+				expect(idx.columns).toEqual(['user_id', 'provider']);
+			});
+
+			test('index() with unique flag', () => {
+				const idx = index('idx_email_unique', 'email', true);
+				expect(idx._type).toBe('index');
+				expect(idx.unique).toBe(true);
 			});
 		});
 
@@ -340,6 +367,46 @@
 
 				db.defineSchema(schema);
 				expect(db.listTables()).toContain('indexed_table');
+			});
+
+			test('defineSchema() with composite unique constraint', () => {
+				const schema = table('oauth_providers', [
+					primaryKey(integer('id'), true),
+					notNull(integer('user_id')),
+					notNull(text('provider')),
+					text('provider_id'),
+					unique(['user_id', 'provider']),
+					unique(['provider', 'provider_id'])
+				]);
+
+				db.defineSchema(schema);
+				expect(db.listTables()).toContain('oauth_providers');
+			});
+
+			test('defineSchema() with index constraints', () => {
+				const schema = table('transactions', [
+					primaryKey(integer('id'), true),
+					integer('user_id'),
+					text('provider'),
+					text('description'),
+					index('idx_user_id', 'user_id'),
+					index('idx_provider', 'provider'),
+					index('idx_user_provider', ['user_id', 'provider'])
+				]);
+
+				db.defineSchema(schema);
+				expect(db.listTables()).toContain('transactions');
+			});
+
+			test('defineSchema() with discount percent real column', () => {
+				const schema = table('discounts', [
+					primaryKey(integer('id'), true),
+					defaultValue(real('discount_percent'), 0)
+				]);
+
+				db.defineSchema(schema);
+				const result = db.insert('discounts', {}) as any;
+				expect(result.discount_percent).toBe(0);
 			});
 
 			test('getSchema() retrieves table schema', () => {

@@ -46,11 +46,21 @@
                 const sql = this.generateCreateTableSQL(schema);
                 this.db.exec(sql);
 
-                // Create indexes
+                // Create indexes from schema.indexes
                 if (schema.indexes) {
                     for (const index of schema.indexes) {
                         const uniqueStr = index.unique ? 'UNIQUE' : '';
                         const indexSql = `CREATE ${uniqueStr} INDEX IF NOT EXISTS ${index.name} ON ${schema.name} (${index.columns.join(', ')})`;
+                        this.db.exec(indexSql);
+                    }
+                }
+
+                // Create indexes from columns array (from index() helper)
+                for (const col of schema.columns) {
+                    if (col && typeof col === 'object' && '_type' in col && col._type === 'index') {
+                        const indexDef = col as types.IndexDefinition;
+                        const uniqueStr = indexDef.unique ? 'UNIQUE' : '';
+                        const indexSql = `CREATE ${uniqueStr} INDEX IF NOT EXISTS ${indexDef.name} ON ${schema.name} (${indexDef.columns.join(', ')})`;
                         this.db.exec(indexSql);
                     }
                 }
@@ -398,50 +408,65 @@
             }
 
             private generateCreateTableSQL(schema: types.TableSchema): string {
-                const columnDefs = schema.columns.map(col => {
-                    let def = `${col.name} ${col.type}`;
+                const columnDefs: string[] = [];
+                const uniqueConstraints: string[] = [];
 
-                    if (col.primaryKey) {
+                for (const col of schema.columns) {
+                    // Skip constraint definitions, they're handled separately
+                    if (!col || typeof col !== 'object' || !('name' in col)) {
+                        if (col && '_type' in col && col._type === 'unique') {
+                            const uniqueCol = col as types.UniqueConstraint;
+                            uniqueConstraints.push(`UNIQUE (${uniqueCol.columns.join(', ')})`);
+                        }
+                        continue;
+                    }
+
+                    const columnCol = col as types.ColumnDefinition;
+                    let def = `${columnCol.name} ${columnCol.type}`;
+
+                    if (columnCol.primaryKey) {
                         def += ' PRIMARY KEY';
-                        if (col.autoIncrement) {
+                        if (columnCol.autoIncrement) {
                             def += ' AUTOINCREMENT';
                         }
                     }
 
-                    if (col.notNull && !col.primaryKey) {
+                    if (columnCol.notNull && !columnCol.primaryKey) {
                         def += ' NOT NULL';
                     }
 
-                    if (col.unique) {
+                    if (columnCol.unique) {
                         def += ' UNIQUE';
                     }
 
-                    if (col.default !== undefined) {
-                        if (typeof col.default === 'string') {
-                            def += ` DEFAULT '${col.default}'`;
-                        } else if (col.default === null) {
+                    if (columnCol.default !== undefined) {
+                        if (typeof columnCol.default === 'string') {
+                            def += ` DEFAULT '${columnCol.default}'`;
+                        } else if (columnCol.default === null) {
                             def += ' DEFAULT NULL';
                         } else {
-                            def += ` DEFAULT ${col.default}`;
+                            def += ` DEFAULT ${columnCol.default}`;
                         }
                     }
 
-                    if (col.references) {
-                        def += ` REFERENCES ${col.references.table}(${col.references.column})`;
-                        if (col.references.options) {
-                            if (col.references.options.onDelete) {
-                                def += ` ON DELETE ${col.references.options.onDelete}`;
+                    if (columnCol.references) {
+                        def += ` REFERENCES ${columnCol.references.table}(${columnCol.references.column})`;
+                        if (columnCol.references.options) {
+                            if (columnCol.references.options.onDelete) {
+                                def += ` ON DELETE ${columnCol.references.options.onDelete}`;
                             }
-                            if (col.references.options.onUpdate) {
-                                def += ` ON UPDATE ${col.references.options.onUpdate}`;
+                            if (columnCol.references.options.onUpdate) {
+                                def += ` ON UPDATE ${columnCol.references.options.onUpdate}`;
                             }
                         }
                     }
 
-                    return def;
-                });
+                    columnDefs.push(def);
+                }
 
-                return `CREATE TABLE IF NOT EXISTS ${schema.name} (${columnDefs.join(', ')})`;
+                // Add unique constraints
+                const allDefs = [...columnDefs, ...uniqueConstraints];
+                return `CREATE TABLE IF NOT EXISTS ${schema.name} (${allDefs.join(', ')})`;
             }
 
         // └────────────────────────────────────────────────────────────────────┘
@@ -455,7 +480,7 @@
 // ╔════════════════════════════════════════ HELP ════════════════════════════════════════╗
 
     // ════════ Schema Builder Helpers ════════
-    export function table(name: string, columns: types.ColumnDefinition[]): types.TableSchema {
+    export function table(name: string, columns: (types.ColumnDefinition | types.UniqueConstraint | types.IndexDefinition)[]): types.TableSchema {
         return { name, columns };
     }
 
@@ -492,7 +517,14 @@
         return { ...col, notNull: true };
     }
 
-    export function unique(col: types.ColumnDefinition): types.ColumnDefinition {
+    export function unique(col: types.ColumnDefinition): types.ColumnDefinition;
+    export function unique(columns: string[]): types.UniqueConstraint;
+    export function unique(col: types.ColumnDefinition | string[]): types.ColumnDefinition | types.UniqueConstraint {
+        // If it's an array, treat it as composite unique constraint
+        if (Array.isArray(col)) {
+            return { _type: 'unique', columns: col };
+        }
+        // Otherwise, it's a single column unique constraint
         return { ...col, unique: true };
     }
 
@@ -502,6 +534,10 @@
 
     export function references(col: types.ColumnDefinition, table: string, column: string, options?: types.ForeignKeyOptions): types.ColumnDefinition {
         return { ...col, references: { table, column, options } };
+    }
+
+    export function index(name: string, columns: string | string[], unique?: boolean): types.IndexDefinition {
+        return { _type: 'index', name, columns: Array.isArray(columns) ? columns : [columns], unique };
     }
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝

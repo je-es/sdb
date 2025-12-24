@@ -8,7 +8,7 @@
 </div>
 
 <div align="center">
-    <img src="https://img.shields.io/badge/v-0.0.2-black"/>
+    <img src="https://img.shields.io/badge/v-0.0.3-black"/>
     <img src="https://img.shields.io/badge/🔥-@je--es-black"/>
     <br>
     <img src="https://github.com/je-es/sdb/actions/workflows/ci.yml/badge.svg" alt="CI" />
@@ -201,7 +201,7 @@
 
         - ##### Foreign Keys & Indexes
             ```ts
-            import { references } from '@je-es/sdb';
+            import { references, index } from '@je-es/sdb';
 
             // Table with foreign key
             const postsSchema = table('posts', [
@@ -225,23 +225,31 @@
                 references(integer('org_id'), 'organizations', 'id', { onDelete: 'SET NULL' })
             ]);
 
+            // Table with composite unique constraints
+            const providersSchema = table('oauth_providers', [
+                primaryKey(integer('id'), true),
+                notNull(integer('user_id')),
+                notNull(text('provider')),
+                text('provider_id'),
+                unique(['user_id', 'provider']),           // One provider per account
+                unique(['provider', 'provider_id']),       // Provider ID must be globally unique
+                index('idx_user_id', 'user_id'),
+                index('idx_provider', 'provider')
+            ]);
+
             // Table with indexes
-            const productsSchema = {
-                name: 'products',
-                columns: [
-                    { ...primaryKey(integer('id'), true) },
-                    { ...text('name') },
-                    { ...real('price') }
-                ],
-                indexes: [
-                    { name: 'idx_name', columns: ['name'] },
-                    { name: 'idx_price', columns: ['price'], unique: true }
-                ]
-            };
+            const productsSchema = table('products', [
+                primaryKey(integer('id'), true),
+                text('name'),
+                defaultValue(real('discount_percent'), 0),
+                index('idx_name', 'name'),
+                index('idx_discount', 'discount_percent', true)  // unique index
+            ]);
 
             db.defineSchema(postsSchema);
             db.defineSchema(ordersSchema);
             db.defineSchema(projectsSchema);
+            db.defineSchema(providersSchema);
             db.defineSchema(productsSchema);
             ```
 
@@ -278,9 +286,11 @@
 
               - `primaryKey(col, autoIncrement?)` - Mark as primary key
               - `notNull(col)` - Add NOT NULL constraint
-              - `unique(col)` - Add UNIQUE constraint
+              - `unique(col)` - Add UNIQUE constraint on single column
+              - `unique(columns[])` - Add UNIQUE constraint on multiple columns (composite)
               - `defaultValue(col, value)` - Set default value
-              - `references(col, table, column, options?)` - Add foreign key constraint with optional `onDelete` (`CASCADE` | `SET NULL` | `RESTRICT` | `NO ACTION` | `SET DEFAULT`) and `onUpdate` behavior
+              - `references(col, table, column, options?)` - Add foreign key constraint with optional `onDelete` and `onUpdate` behavior
+              - `index(name, columns, unique?)` - Create index on one or more columns
 
 <!-- ╚═════════════════════════════════════════════════════════════════╝ -->
 

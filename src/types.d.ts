@@ -25,9 +25,21 @@
         references?     : { table: string; column: string; options?: ForeignKeyOptions };
     }
 
+    export interface UniqueConstraint {
+        _type           : 'unique';
+        columns         : string[];
+    }
+
+    export interface IndexDefinition {
+        _type           : 'index';
+        name            : string;
+        columns         : string[];
+        unique?         : boolean;
+    }
+
     export interface TableSchema {
         name            : string;
-        columns         : ColumnDefinition[];
+        columns         : (ColumnDefinition | UniqueConstraint | IndexDefinition)[];
         indexes?        : { name: string; columns: string[]; unique?: boolean }[];
     }
 

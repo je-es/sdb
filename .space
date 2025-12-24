@@ -6,7 +6,7 @@
     "repo"              : {
         "org"           : "je-es",
         "name"          : "sdb",
-        "version"       : "0.0.2",
+        "version"       : "0.0.3",
         "desc"          : "A lightweight, type-safe SQLite database wrapper for Bun with an elegant API and zero dependencies.",
         "url"           : "https://github.com/je-es/sdb",
         "kw"            : [ "je-es", "sdb", "database" ],
